@@ -99,7 +99,7 @@ public final class Ac3AudioRenderer implements AudioRenderer {
                     }
                 } finally {free.offer(slot);}
             }
-        } catch(InterruptedException e) {
+        } catch(InterruptedException | Ac3WriteLoop.CancelledException e) {
             if(running) {failed=true;Log.e(Ac3Track.TAG,"AC3 worker interrupted",e);}
             Thread.currentThread().interrupt();
         } catch(RuntimeException | LinkageError e) { failed=true;Log.e(Ac3Track.TAG,"Dolby runtime failure; fallback on next packet",e); }

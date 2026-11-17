@@ -159,11 +159,22 @@ lip sync, controllers on the new APK, physical eARC hotplug and the target
 of at most 50 ms additional delay remain unverified. Receiver standby is
 not classified as an encoder defect.
 
-Review reproduced loss of a 10 ms PCM cue before 100 ms source silence, and
-positive partial writes taking 1000 ms despite a 150 ms deadline. Queue age,
-stop/fallback races, worker startup and guaranteed release after pause/flush
-errors also remain open. Existing unit tests miss those defects. Passing
-CI does not mean they are fixed. All work is tracked in the single issue #1.
+Review reproduced loss of a 10 ms PCM cue before 100 ms source silence;
+that defect remains open. Positive partial writes previously took 1000 ms
+despite a 150 ms deadline. The write loop now checks one elapsed-time budget
+before and after every nonblocking call and checks thread interruption.
+Intentional cancellation uses the worker interruption path, preserving the
+interrupt flag without marking a normal stop as an output failure.
+Deterministic transport tests cover partial/zero/negative writes, the 150 ms
+trickle timeout, successful 100–149 ms sinks, late complete writes and
+cancellation before/during a write or idle. A vendor call that stalls
+internally can only be detected after it returns.
+
+Queue age, stop/fallback serialization, worker startup and guaranteed release
+after pause/flush errors remain open. Real HAL recovery after a partly written
+coded frame and the new write path require device checks. Passing CI does not
+establish end-to-end latency or resolve those remaining defects. All work is
+tracked in the single issue #1.
 
 ## Device checks and PCM recovery
 
