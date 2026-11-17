@@ -20,6 +20,8 @@ with zipfile.ZipFile(apk) as archive:
     names = archive.namelist()
     for fixture in ('channels.ac3', 'channels.eac3', 'channels.pcm'):
         assert ('assets/' + fixture in names) == (variant == 'debug'), (variant, fixture)
+    assert ('assets/TTS-NOTICE.txt' in names) == (variant == 'debug')
+    assert not any(name.endswith(('.onnx', '.whl')) for name in names)
     assert 'assets/FFmpeg-COPYING.LGPLv2.1' in names
     assert 'assets/FFmpeg-NOTICE.txt' in names
     assert 'lib/armeabi-v7a/libmoonlight-ac3.so' in names

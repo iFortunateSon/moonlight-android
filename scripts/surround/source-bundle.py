@@ -30,11 +30,17 @@ for line in subprocess.check_output(['git', 'submodule', 'status', '--recursive'
 ffmpeg = root / '.build/downloads/ffmpeg-7.1.1.tar.xz'
 digest = hashlib.sha256(ffmpeg.read_bytes()).hexdigest()
 assert digest == '733984395e0dbbe5c046abda2dc49a5544e7e0e1e2366bba849222ae9e3a03b1'
+fixtures = json.loads((root / '.build/tts-fixture-manifest.json').read_text())
+assert fixtures['build_time_only'] is True
+assert set(fixtures['sha256']) == {'channels.pcm', 'channels.ac3', 'channels.eac3'}
+for name, expected in fixtures['sha256'].items():
+    assert hashlib.sha256((root / 'app/src/debug/assets' / name).read_bytes()).hexdigest() == expected
 manifest = {
     'repository': 'https://github.com/iFortunateSon/moonlight-android',
     'commit': commit,
     'upstream_base': '1b1b100e63e8ffcf1496e324ff7b57ee9f2db2a9',
     'submodules': modules,
+    'debug_fixture_generation': fixtures,
     'ffmpeg': {'version': '7.1.1', 'sha256': digest,
                'configuration': 'scripts/surround/build-ffmpeg.sh',
                'license': 'LGPL-2.1-or-later; no GPL/nonfree options'},
@@ -63,12 +69,13 @@ with tempfile.TemporaryDirectory(prefix='moonlight-source-') as temporary:
     shutil.copy2(manifest_path, stage / manifest_path.name)
     (stage / 'BUILD.txt').write_text(
         'Install JDK 17, Android SDK 34/build-tools 34.0.0/NDK 23.2.8568313, '
-        'make, C compiler, Python 3, curl, ffmpeg, espeak-ng, unzip.\n'
+        'make, C compiler, Python 3.12+ with venv support, curl, ffmpeg, unzip.\n'
         'Accept Android SDK licenses. Set JAVA_HOME and ANDROID_HOME.\n'
         'cd moonlight-android\nmkdir -p .build/downloads\n'
         'cp ../ffmpeg-7.1.1.tar.xz .build/downloads/\n'
         'bash scripts/surround/build.sh\n'
-        'The build resolves the recorded Maven/Gradle/Android dependencies over HTTPS.\n'
+        'The build resolves Maven/Gradle/Android dependencies, pinned build-time Piper/voice files, and public PyPI dependencies over HTTPS.\n'
+        'Piper/voice files are not bundled here or in the APK; byte-identical/offline rebuilds are not claimed.\n'
         'See docs/surround.md for known defects, licenses and signing.\n')
     with tarfile.open(output / 'moonlight-surround-source.tar.gz', 'w:gz') as archive:
         archive.add(stage, arcname=stage.name)

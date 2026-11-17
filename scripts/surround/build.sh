@@ -13,7 +13,8 @@ bash scripts/surround/test-native.sh > .build/reports/native-tests.txt 2>&1 || {
   exit 1
 }
 tail -n 16 .build/reports/native-tests.txt
-python3 scripts/surround/generate-fixtures.py "$PWD"
+bash scripts/surround/prepare-tts.sh
+.build/tts/venv/bin/python scripts/surround/generate-fixtures.py "$PWD" | tee .build/reports/tts-fixtures.txt
 ./gradlew assembleNonRootDebug assembleNonRootRelease lintNonRootDebug lintNonRootRelease \
   --no-daemon --max-workers="${BUILD_JOBS:-2}" \
   '-Dorg.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=384m' --console plain
