@@ -7,7 +7,8 @@ ndk_bin="$ANDROID_HOME/ndk/23.2.8568313/toolchains/llvm/prebuilt/linux-x86_64/bi
 mkdir -p .build/downloads .build/dolby-arm
 archive="$PWD/.build/downloads/ffmpeg-7.1.1.tar.xz"
 if [[ ! -f "$archive" ]]; then
-  curl --proto '=https' --tlsv1.2 -fL --retry 2 \
+  curl --proto '=https' --tlsv1.2 -fsSL --retry 2 --retry-all-errors \
+    --connect-timeout 20 --max-time 180 \
     https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.xz -o "$archive.partial"
   mv "$archive.partial" "$archive"
 fi

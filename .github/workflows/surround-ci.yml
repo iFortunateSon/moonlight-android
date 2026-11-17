@@ -1,7 +1,7 @@
 name: Surround build
 on:
   push:
-    branches: [surround, 'prototype/**', 'feature/**']
+    branches: [surround]
   pull_request:
     branches: [surround]
   workflow_dispatch:

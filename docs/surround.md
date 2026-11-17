@@ -74,7 +74,7 @@ Release is minified and uses a separate fork signing key.
 Debug package: `io.github.ifortunateson.moonlight.surround.debug`.
 Release package: `io.github.ifortunateson.moonlight.surround.unofficial`.
 
-`Surround build` runs on push/PR without signing secrets, using a read-only
+`Surround build` runs on `surround` pushes and PRs targeting `surround`, without signing secrets, using a read-only
 token. Reports are retained for 7 days; no APK is uploaded while blockers
 remain. Actions are pinned to commit SHAs. Public CI has no private runner,
 ADB connection or access to the owner's home infrastructure.
