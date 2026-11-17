@@ -131,4 +131,16 @@
         <item>right</item>
         <item>left</item>
     </string-array>
+    <string-array name="audio_output_format_names">
+        <item>@string/surround_pcm_original</item>
+        <item>@string/surround_ac3</item>
+        <item>@string/surround_eac3</item>
+        <item>@string/surround_auto</item>
+    </string-array>
+    <string-array name="audio_output_format_values">
+        <item>pcm</item>
+        <item>ac3</item>
+        <item>eac3</item>
+        <item>auto</item>
+    </string-array>
 </resources>

@@ -1,3 +1,17 @@
+# Moonlight Surround (experimental fork)
+
+AC-3/E-AC-3 5.1 output for Android TV. See [architecture, builds and limitations](docs/surround.md).
+[One tracking issue](https://github.com/iFortunateSon/moonlight-android/issues/1)
+contains review fixes and acceptance criteria. Public APK distribution is
+blocked by the known defects documented there.
+
+The `surround` branch preserves the tested v12.1 base; `master` retains upstream v12.2.
+Diagnostic Activities and spoken fixtures are debug-only. Releases use a separate
+applicationId and signing key and can co-install with official Moonlight.
+The original project README follows.
+
+---
+
 # Moonlight Android
 
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/232a8tadrrn8jv0k/branch/master?svg=true)](https://ci.appveyor.com/project/cgutman/moonlight-android/branch/master)
