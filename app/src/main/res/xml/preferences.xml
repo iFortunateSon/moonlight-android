@@ -42,6 +42,12 @@
             android:defaultValue="false" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/category_audio_settings">
+        <ListPreference android:key="list_audio_output_format"
+            android:title="@string/surround_output_format_title"
+            android:summary="@string/surround_output_format_summary"
+            android:entries="@array/audio_output_format_names"
+            android:entryValues="@array/audio_output_format_values"
+            android:defaultValue="pcm" />
         <ListPreference
             android:key="list_audio_config"
             android:title="@string/title_audio_config_list"

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="surround_output_format_title">Audio Output Format</string>
+    <string name="surround_output_format_summary">PCM (Original), AC-3, E-AC-3 (Experimental), or Auto. Applies on stream restart. Stereo uses PCM.</string>
+    <string name="surround_pcm_original">PCM (Original)</string>
+    <string name="surround_ac3">Dolby Digital 5.1 (AC-3)</string>
+    <string name="surround_eac3">Dolby Digital Plus 5.1 (E-AC-3)</string>
+    <string name="surround_auto">Auto</string>
+    <string name="surround_pcm_fallback">Dolby output is unavailable. Using original PCM. Change the format in Audio settings.</string>
+    <string name="surround_ac3_setup_fallback">E-AC-3 is unavailable. Using AC-3.</string>
+    <string name="surround_ac3_runtime_fallback">E-AC-3 output failed. Using AC-3.</string>
+</resources>

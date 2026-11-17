@@ -1,0 +1,13 @@
+This experimental Moonlight fork includes FFmpeg 7.1.1 libavcodec/libavutil
+with the AC-3 and E-AC-3 encoders. FFmpeg is licensed under the GNU Lesser
+General Public License, version 2.1 or later. See FFmpeg-COPYING.LGPLv2.1.
+
+Source: https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.xz
+SHA256: 733984395e0dbbe5c046abda2dc49a5544e7e0e1e2366bba849222ae9e3a03b1
+The FFmpeg source is unmodified. Configuration and build instructions:
+scripts/surround/build-ffmpeg.sh in the matching Moonlight source bundle.
+The corresponding source bundle is distributed alongside each draft APK:
+https://github.com/iFortunateSon/moonlight-android/releases
+
+Copyright notices for FFmpeg contributors are retained in its source files.
+Moonlight Android and this fork retain the GNU General Public License v3.
