@@ -61,6 +61,12 @@ public class WriteLoopTest {
         failure(() -> Ac3WriteLoop.writeFully(ByteBuffer.allocate(10), d -> 1, new Clock(), 150));
         failure(() -> Ac3WriteLoop.writeFully(ByteBuffer.allocate(10), d -> 11, new Clock(), 150));
 
+        ByteBuffer failedPartial = ByteBuffer.allocate(2560); int[] errorCalls = {0};
+        failure(() -> Ac3WriteLoop.writeFully(failedPartial, d -> {
+            return errorCalls[0]++ == 0 ? advance(d, 100) : -6;
+        }, new Clock(), 150));
+        check(errorCalls[0] == 2 && failedPartial.position() == 100, "stop on error after partial frame");
+
         Clock trickle = new Clock(); ByteBuffer partial = ByteBuffer.allocate(10000);
         IllegalStateException error = failure(() -> Ac3WriteLoop.writeFully(partial, data -> {
             trickle.t += 10;
@@ -93,6 +99,16 @@ public class WriteLoopTest {
         cancellation(true, false);
         cancellation(false, false);
         cancellation(false, true);
+        Clock idleCancellation = new Clock() {
+            @Override public void idle() { super.idle(); Thread.currentThread().interrupt(); }
+        };
+        int[] idleCalls = {0};
+        try {
+            IllegalStateException cancelled = failure(() -> Ac3WriteLoop.writeFully(
+                ByteBuffer.allocate(2560), d -> { idleCalls[0]++; return 0; }, idleCancellation, 150));
+            check(cancelled instanceof Ac3WriteLoop.CancelledException && idleCalls[0] == 1,
+                "cancel while waiting for sink");
+        } finally { Thread.interrupted(); }
         ByteBuffer fresh = ByteBuffer.allocate(10);
         Ac3WriteLoop.writeFully(fresh, d -> advance(d, d.remaining()), new Clock(), 150);
         check(!fresh.hasRemaining(), "fresh transport after failure/cancellation");
