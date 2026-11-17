@@ -50,7 +50,7 @@ debug-probe option and is never wrapped around a raw encoded AudioTrack.
 ## Build and release process
 
 Use Linux x86_64, JDK 17, Python 3.12+, a C compiler, make, curl, unzip,
-ffmpeg and espeak-ng. Android SDK packages: platform 34, build-tools 34.0.0,
+ffmpeg and Python venv support (`python3-venv` on Ubuntu). Android SDK packages: platform 34, build-tools 34.0.0,
 NDK 23.2.8568313, with SDK licenses accepted. Gradle 8.2 and AGP 8.2.2 are
 pinned. The owner's cloud agent must not host Android builds; use the
 dedicated build VM or a standard GitHub-hosted runner.
@@ -64,7 +64,7 @@ bash scripts/surround/build.sh
 ```
 
 The script verifies the FFmpeg checksum, builds minimal libraries, generates
-English spoken debug fixtures, runs Java/C tests and the production JNI
+English neural spoken debug fixtures with build-time Piper, runs Java/C tests and the production JNI
 encoder on a host JVM with independent CRC/decode/channel-isolation checks,
 then builds debug/release APKs and runs lint. Host JNI tests do not validate
 Android AudioTrack or ARM execution. APK checks inspect both packaged
@@ -91,9 +91,56 @@ new APK test results in the release notes.
 `scripts/surround/source-bundle.py` requires a clean commit and clean,
 initialized recursive submodules. It includes their contents, the exact
 FFmpeg archive, build scripts, original licenses/notices and a manifest.
-Rebuilding still requires the recorded Maven/Gradle and Android SDK
-dependencies over HTTPS. Byte-identical APK reproduction is not claimed.
+Rebuilding still requires Maven/Gradle and Android SDK dependencies, pinned
+Hugging Face voice/Piper files, and public PyPI dependencies over HTTPS.
+Piper/model files are not included in the snapshot. Neither fully offline
+rebuilds nor byte-identical APK reproduction are claimed.
 GitHub's default source.zip omits submodules and FFmpeg.
+
+## English neural debug speech
+
+`scripts/surround/prepare-tts.sh` prepares Piper 1.8.0 and the
+`en_US-ljspeech-high` voice under `.build/tts/`. It verifies pinned SHA256
+values for the model, config, model card and Linux x86_64 wheel before
+reuse or installation. A corrupt cache fails verification instead of
+silently supplying different audio. PyPI dependencies are resolved into
+an isolated venv without training/GPU extras; their actual versions are
+recorded with the generated fixtures.
+
+The model is about 114 MB, with a 34 MB Piper wheel plus dependencies.
+These are build-time downloads. No model, synthesis engine or network API
+is used by Moonlight during playback, and neither model nor wheel is
+packaged in debug/release APKs. Piper uses eSpeak for phonemes; its neural
+model generates the waveform instead of the old eSpeak waveform.
+
+The generator loads the voice once with one CPU inference thread, then
+produces complete English utterances: Front left, Front right, Center,
+Rear left, Rear right. The fourth slot is only a 60 Hz LFE tone with short
+fades. PCM remains 48 kHz/16-bit with separate FL/FR/C/LFE/BL/BR lanes and
+four seconds per slot. Utterances repeat when they fit; words are never
+truncated. Source isolation, encoded CRC/decoding and six-channel RMS
+checks must pass before the three generated assets replace debug inputs.
+A unique temporary directory is used for each run, including repeated builds.
+
+```sh
+bash scripts/surround/prepare-tts.sh
+.build/tts/venv/bin/python scripts/surround/generate-fixtures.py "$PWD"
+```
+
+Only `channels.pcm`, `channels.ac3`, `channels.eac3` and the tracked
+`TTS-NOTICE.txt` enter debug assets. Release contains none of those files.
+`.build/tts-fixture-manifest.json` records source pins, actual package
+versions, phrase durations and generated-file hashes; source bundles copy
+that metadata into their build manifest. Network downloads occur only at
+build time. Pronunciation remains subject to a listening test on the target
+system; generated audio does not fix the open audio-path review findings.
+
+Piper is GPL-3.0. The voice repository declares MIT; the specific
+[voice card](https://huggingface.co/rhasspy/piper-voices/blob/e9ab671f2a0e50a701b34361136ba3e6a3a9eb0c/en/en_US/ljspeech/high/MODEL_CARD)
+identifies [LJ Speech](https://keithito.com/LJ-Speech-Dataset/) as public-domain
+training material. These generation tools do not add a runtime dependency
+or change the existing FFmpeg licensing. Debug APKs retain a provenance
+notice; build scripts contain the exact model/wheel URLs and checksums.
 
 ## Earlier device results and known defects
 

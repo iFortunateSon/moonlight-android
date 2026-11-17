@@ -1,0 +1,15 @@
+Debug channel-test speech is generated locally with Piper 1.8.0 and the
+English en_US-ljspeech-high ONNX voice. Piper/model files are build-time
+resources and are not included in the APK or used during streaming.
+
+Piper engine: GPL-3.0
+https://github.com/OHF-Voice/piper1-gpl/tree/v1.8.0
+
+Voice repository metadata declares MIT. The specific voice card identifies
+its LJ Speech training dataset as public domain:
+https://huggingface.co/rhasspy/piper-voices/blob/e9ab671f2a0e50a701b34361136ba3e6a3a9eb0c/en/en_US/ljspeech/high/MODEL_CARD
+https://keithito.com/LJ-Speech-Dataset/
+
+Model SHA256: 5d4f08ba6a2a48c44592eed3ce56bf85e9de3dd4e20df90541ae68a8310c029a
+Config SHA256: 7e1f4634af596d83cca997fb7a931ba80b70f8a316a2655ee69c55365e0ace14
+Generated file hashes and runtime versions are recorded in the build manifest.
