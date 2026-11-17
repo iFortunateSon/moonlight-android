@@ -8,11 +8,12 @@ umask 077
 key_dir=$(mktemp -d)
 trap 'rm -rf -- "$key_dir"' EXIT
 printf '%s' "$SURROUND_KEYSTORE_B64" | base64 --decode > "$key_dir/release.p12"
-printf '%s' "$SURROUND_STORE_PASSWORD" > "$key_dir/password"
+printf '%s\n' "$SURROUND_STORE_PASSWORD" > "$key_dir/store-password"
+printf '%s\n' "$SURROUND_STORE_PASSWORD" > "$key_dir/key-password"
 mkdir -p .build/release
 "$ANDROID_HOME/build-tools/34.0.0/apksigner" sign \
   --ks "$key_dir/release.p12" --ks-key-alias moonlight-surround \
-  --ks-pass "file:$key_dir/password" --key-pass "file:$key_dir/password" \
+  --ks-pass "file:$key_dir/store-password" --key-pass "file:$key_dir/key-password" \
   --out .build/release/moonlight-surround-armeabi-v7a.apk \
   app/build/outputs/apk/nonRoot/release/app-nonRoot-release-unsigned.apk
 "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose --print-certs \
