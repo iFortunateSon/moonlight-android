@@ -1,0 +1,66 @@
+name: Prepare draft prerelease
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'New tag, for example surround-v12.1-alpha.1'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: surround-draft
+  cancel-in-progress: false
+jobs:
+  draft:
+    if: github.repository == 'iFortunateSon/moonlight-android' && github.ref == 'refs/heads/surround'
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Validate new release tag
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: '[[ "$RELEASE_TAG" =~ ^surround-v12\.1-alpha\.[1-9][0-9]*$ ]]'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: '17.0.21+9'
+      - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+        with:
+          cmdline-tools-version: '15859902'
+          log-accepted-android-sdk-licenses: false
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg espeak-ng
+          sdkmanager 'platforms;android-34' 'build-tools;34.0.0' 'ndk;23.2.8568313'
+      - name: Build and check
+        run: bash scripts/surround/build.sh
+      - name: Sign APK and assemble corresponding source
+        env:
+          SURROUND_KEYSTORE_B64: ${{ secrets.SURROUND_KEYSTORE_B64 }}
+          SURROUND_STORE_PASSWORD: ${{ secrets.SURROUND_STORE_PASSWORD }}
+        run: bash scripts/surround/sign-draft.sh
+      - name: Create a draft only
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: |
+          gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f "ref=refs/tags/$RELEASE_TAG" -f "sha=$RELEASE_COMMIT" --jq .ref
+          actual=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq .object.sha)
+          [[ "$actual" == "$RELEASE_COMMIT" ]]
+          gh release create "$RELEASE_TAG" --verify-tag --draft --prerelease \
+            --title "Moonlight Surround $RELEASE_TAG (draft)" \
+            --notes-file docs/prerelease-notes.md \
+            .build/release/moonlight-surround-armeabi-v7a.apk \
+            .build/release/moonlight-surround-source.tar.gz \
+            .build/release/build-manifest.json \
+            .build/release/native-debug-symbols.zip .build/release/SHA256SUMS
